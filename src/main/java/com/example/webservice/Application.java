@@ -52,4 +52,13 @@ public class Application {
     public int hashCode() {
         return Objects.hash(id, name, description);
     }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

@@ -32,20 +32,55 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         return applications;
     }
 
+    @Override
+    public Application findById(int id) {
+        Application application = null;
+        try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
+            String sql = "select * from tza_application where id =?";
+            PreparedStatement select = connection.prepareStatement(sql);
+            select.setInt(1, id);
+            application = getApplication(select);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return application;
+    }
+
+    @Override
+    public Application findByIdAndName(int id, String name) {
+        Application application = null;
+        try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
+            String sql = "select * from tza_application where id =? and name=?";
+            PreparedStatement select = connection.prepareStatement(sql);
+            select.setInt(1, id);
+            select.setString(2, name);
+            application = getApplication(select);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return application;
+    }
+
+    private Application getApplication(PreparedStatement statement) throws SQLException {
+        Application result = null;
+        ResultSet res = statement.executeQuery();
+        while (res.next()) {
+            int t_id = res.getInt("id");
+            String t_name = res.getString("name");
+            String description = res.getString("description");
+            result = new Application(t_id, t_name, description);
+        }
+        return result;
+    }
+
     private static void fillApplication(List<Application> applications, ResultSet res) throws SQLException {
         int id = res.getInt("id");
         String name = res.getString("name");
         String description = res.getString("description");
         applications.add(new Application(id, name, description));
-    }
-
-    @Override
-    public Application findById(int id) {
-        return null;
-    }
-
-    @Override
-    public Application findByIdAndName(int id, String name) {
-        return null;
     }
 }

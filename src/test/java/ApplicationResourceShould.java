@@ -1,5 +1,6 @@
 import com.example.webservice.Application;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,8 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collection;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,8 +62,8 @@ public class ApplicationResourceShould {
     }
 
     @Test
-    void send_parameter_to_url() throws URISyntaxException, IOException, InterruptedException {
-        int id = 141;
+    void get_date_by_send_id_parameter() throws URISyntaxException, IOException, InterruptedException {
+        int id = 70;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(BASE_URL + id))
                 .GET()
@@ -69,9 +72,8 @@ public class ApplicationResourceShould {
 
         HttpResponse<String> response = getHttpResponse(request);
         Application result = gson.fromJson(response.body(), Application.class);
-
         Assertions.assertEquals(response.statusCode(), HTTP_200);
-        assertResponse(result, 141, "name 141", "description 141");
+        assertResponse(result, 70,"Channel list","TV Guide type app");
 
     }
 
@@ -90,7 +92,24 @@ public class ApplicationResourceShould {
         Application result = gson.fromJson(response.body(), Application.class);
 
         Assertions.assertEquals(response.statusCode(), HTTP_200);
-        assertResponse(result, 10, "mariam10", "description for mariam");
+        assertResponse(result, 70, "Channel list", "TV Guide type app");
+    }
+
+    @Test
+    void get_all_applications() throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder().uri(new URI(BASE_URL)).GET().build();
+
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
+        TypeToken<Collection<Application>> collectionType = new TypeToken<>() {};
+        Collection<Application> applications = gson.fromJson(response.body(), collectionType.getType());
+        Optional<Application> first = applications.stream().filter(application -> application.getId() == 70).findFirst();
+
+        Application expApp = new Application(70,"Channel list","TV Guide type app");
+        assertThat(first.get()).isEqualTo(expApp);
+        assertThat(response.statusCode()).isEqualTo(200);
+
+
     }
 
     private static HttpResponse<String> getHttpResponse(HttpRequest request) throws IOException, InterruptedException {
@@ -102,4 +121,6 @@ public class ApplicationResourceShould {
         assertThat(actual.getName()).isEqualTo(expName);
         assertThat(actual.getDescription()).isEqualTo(expDescription);
     }
+
+
 }

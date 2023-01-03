@@ -8,6 +8,8 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class ApplicationDAOShould {
     private static final String HOST = "jdbc:mysql://localhost:3306/trackzilla_schema";
     private static final String USER = "amir";
@@ -24,12 +26,28 @@ public class ApplicationDAOShould {
             while (res.next()) {
                 fillApplication(applications, res);
 
-                Assertions.assertThat(applications).containsOnly(new Application(70,"Channel list","TV Guide type app"));
+                assertThat(applications).containsOnly(new Application(70, "Channel list", "TV Guide type app"));
             }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+    }
+
+    @Test
+    void find_application_from_tza_ticket_table_by_id() {
+        ApplicationDAO dao = new ApplicationDAOImpl();
+        Application result = dao.findById(70);
+        assertThat(result).isEqualTo(new Application(70, "Channel list", "TV Guide type app"));
+
+    }
+
+    @Test
+    void find_application_from_tza_ticket_table_by_id_and_name() {
+        ApplicationDAO dao = new ApplicationDAOImpl();
+        Application result = dao.findByIdAndName(70,"Channel list");
+        assertThat(result).isEqualTo(new Application(70, "Channel list", "TV Guide type app"));
 
     }
 

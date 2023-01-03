@@ -1,7 +1,10 @@
 package com.example.webservice;
 
+import com.example.webservice.service.ApplicationService;
+import com.example.webservice.service.ApplicationServiceImpl;
+
 import javax.ws.rs.*;
-import java.util.LinkedList;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("applications")
@@ -9,14 +12,19 @@ import java.util.List;
 @Consumes("application/json")
 public class ApplicationResource {
 
-    @GET
-    public List<Application> getAll() { //path is http://localhost:8080/javaee-7.0/rest/applications
-        List<Application> testList = new LinkedList<>();
-        testList.add(new Application(1, "name 1", "description 1"));
-        testList.add(new Application(2, "name 2", "description 2"));
-        testList.add(new Application(3, "name 3", "description 3"));
+    private static final int HTTP_200 = 200;
+    private final ApplicationService service;
 
-        return testList;
+    public ApplicationResource() {
+        service = new ApplicationServiceImpl();
+    }
+
+    @GET
+    public Response getAll() { //path is http://localhost:8080/webservice-1.0-SNAPSHOT/rest/applications
+
+        List<Application> applications = service.findAll();
+
+        return Response.status(HTTP_200).entity(applications).build();
     }
 
 
@@ -27,13 +35,16 @@ public class ApplicationResource {
 
     @GET
     @Path("{id}")
-    public Application getApplication(@PathParam("id") int id) {
-        return new Application(id, "name " + id, "description " + id);
+    public Response getApplication(@PathParam("id") int id) {
+        Application application = service.findById(id);
+        return Response.status(HTTP_200).entity(application).build();
     }
 
     @GET
     @Path("{id}/{name}")
-    public Application getApplicationMultiParam(@PathParam("id") int id, @PathParam("name") String name) {
-        return new Application(id, name + id, "description for " + name);
+    public Response getApplicationMultiParam(@PathParam("id") int id, @PathParam("name") String name) {
+        Application application = service.findByIdAndName(id,name);
+        return Response.status(HTTP_200).entity(application).build();
+
     }
 }
