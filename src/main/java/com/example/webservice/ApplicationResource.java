@@ -1,5 +1,7 @@
 package com.example.webservice;
 
+import com.example.webservice.dao.RuntimeSQLException;
+import com.example.webservice.dao.RuntimeSQLIntegrityException;
 import com.example.webservice.service.ApplicationService;
 import com.example.webservice.service.ApplicationServiceImpl;
 
@@ -29,8 +31,17 @@ public class ApplicationResource {
 
 
     @POST
-    public Application addApplication(Application application) {
-        return application;
+    public Response addApplication(Application application) {
+        try {
+            service.addApplication(application);
+        } catch (RuntimeSQLIntegrityException e) {
+            e.printStackTrace();
+            return Response.status(409).build();
+        } catch (RuntimeSQLException e) {
+            return Response.status(403).build();
+        }
+
+        return Response.status(201).build();
     }
 
     @GET
@@ -43,7 +54,7 @@ public class ApplicationResource {
     @GET
     @Path("{id}/{name}")
     public Response getApplicationMultiParam(@PathParam("id") int id, @PathParam("name") String name) {
-        Application application = service.findByIdAndName(id,name);
+        Application application = service.findByIdAndName(id, name);
         return Response.status(HTTP_200).entity(application).build();
 
     }

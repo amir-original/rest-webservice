@@ -21,6 +21,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Application findByIdAndName(int id, String name) {
-        return null;
+        ApplicationDAO dao = new ApplicationDAOImpl();
+        return dao.findByIdAndName(id,name);
+    }
+
+    @Override
+    public void addApplication(Application application) {
+        ApplicationDAO dao = new ApplicationDAOImpl();
+        dao.addApplication(application);
     }
 }

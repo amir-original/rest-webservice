@@ -12,4 +12,7 @@ public interface ApplicationDAO {
 
     Application findByIdAndName(int id,String name);
 
+    void addApplication(Application application);
+    void delete(int id);
+
 }

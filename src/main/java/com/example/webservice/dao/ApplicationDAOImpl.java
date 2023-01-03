@@ -50,7 +50,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
 
     @Override
     public Application findByIdAndName(int id, String name) {
-        Application application = null;
+        Application application;
         try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
             String sql = "select * from tza_application where id =? and name=?";
             PreparedStatement select = connection.prepareStatement(sql);
@@ -63,6 +63,35 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         }
 
         return application;
+    }
+
+    @Override
+    public void addApplication(Application application) {
+
+        try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
+            String sql = "insert into tza_application values (?,?,?)";
+            PreparedStatement insert = connection.prepareStatement(sql);
+            insert.setInt(1, application.getId());
+            insert.setString(2, application.getName());
+            insert.setString(3, application.getDescription());
+            insert.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new RuntimeSQLIntegrityException(e);
+        }catch (SQLException e){
+            throw new RuntimeSQLException(e);
+        }
+    }
+
+    @Override
+    public void delete(int id) {
+        try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
+            String sql = "delete from tza_application where id=?";
+            PreparedStatement delete = connection.prepareStatement(sql);
+            delete.setInt(1, id);
+            delete.executeUpdate();
+        } catch (SQLException e){
+            throw new RuntimeSQLException(e);
+        }
     }
 
     private Application getApplication(PreparedStatement statement) throws SQLException {

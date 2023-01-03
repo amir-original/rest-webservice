@@ -10,4 +10,6 @@ public interface ApplicationService {
     Application findById(int id);
 
     Application findByIdAndName(int id,String name);
+
+    void addApplication(Application application);
 }
