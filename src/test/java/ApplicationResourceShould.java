@@ -1,19 +1,13 @@
 import com.example.webservice.Application;
-import com.example.webservice.dao.ApplicationDAO;
 import com.example.webservice.dao.ApplicationDAOImpl;
 import com.example.webservice.service.ApplicationServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import httpProvider.HttpRequestServe;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collection;
 import java.util.Optional;
@@ -24,118 +18,93 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ApplicationResourceShould {
 
     private static final String BASE_URL = "http://localhost:8080/webservice-1.0-SNAPSHOT/rest/applications/";
-    private static final String JSON_CONTENT_TYPE = "application/json";
     private static final int HTTP_200 = 200;
     private Gson gson;
+    private HttpRequestServe httpRequest;
+    private ApplicationDAOImpl dao;
+    private ApplicationServiceImpl service;
 
     @BeforeEach
     void setUp() {
         gson = new Gson();
+        httpRequest = new HttpRequestServe();
+        dao = new ApplicationDAOImpl();
+        service = new ApplicationServiceImpl(dao);
     }
 
     @Test
-    void send_data_by_post() throws URISyntaxException, IOException, InterruptedException {
-        int id = 101;
-        Application application = new Application(id, "lockdown", "baby, calm down");
-        String json = gson.toJson(application);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(BASE_URL))
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .header("content-type", JSON_CONTENT_TYPE)
-                .build();
-
-        HttpResponse<String> response = getHttpResponse(request);
-
-        Assertions.assertEquals(response.statusCode(), 201);
+    void send_data_by_post() {
+        int id = 103;
+        Application application = getApp(id, "lockdown", "baby, calm down");
+        HttpResponse<String> response = httpRequest.post(BASE_URL, application);
+        Assertions.assertEquals(201, response.statusCode());
         new ApplicationDAOImpl().delete(id);
     }
 
     @Test
-    void get_http_409_when_add_already_exist_record() throws URISyntaxException, IOException, InterruptedException {
+    void get_http_409_when_add_already_exist_record() {
         int id = 101;
-        Application application = new Application(id, "lockdown", "baby, calm down");
-        new ApplicationServiceImpl().addApplication(application);
-        String json = gson.toJson(application);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(BASE_URL))
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .header("content-type", JSON_CONTENT_TYPE)
-                .build();
+        Application application = getApp(id, "lockdown", "baby, calm down");
 
-        HttpResponse<String> response = getHttpResponse(request);
 
-        new ApplicationDAOImpl().delete(id);
+        service.addApplication(application);
+        HttpResponse<String> response = httpRequest.post(BASE_URL, application);
+
         Assertions.assertEquals(409, response.statusCode());
-        new ApplicationDAOImpl().delete(id);
+        dao.delete(id);
     }
 
     @Test
-    void get_data() throws IOException, InterruptedException, URISyntaxException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(BASE_URL))
-                .GET()
-                .header("content-type", JSON_CONTENT_TYPE)
-                .build();
-
-        HttpResponse<String> response = getHttpResponse(request);
-
-
+    void get_data() {
+        HttpResponse<String> response = httpRequest.get(BASE_URL);
         Assertions.assertEquals(HTTP_200, response.statusCode());
     }
 
     @Test
-    void get_date_by_send_id_parameter() throws URISyntaxException, IOException, InterruptedException {
+    void get_date_by_send_id_parameter() {
         int id = 70;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(BASE_URL + id))
-                .GET()
-                .header("content-type", JSON_CONTENT_TYPE)
-                .build();
+        String uri = BASE_URL + id;
+        HttpResponse<String> response = httpRequest.get(uri);
+        Application result = httpRequest.getGsonResponse(response, Application.class);
 
-        HttpResponse<String> response = getHttpResponse(request);
-        Application result = gson.fromJson(response.body(), Application.class);
         Assertions.assertEquals(response.statusCode(), HTTP_200);
         assertResponse(result, 70,"Channel list","TV Guide type app");
 
     }
 
     @Test
-    void send_multiple_param_to_url() throws URISyntaxException, IOException, InterruptedException {
+    void send_multiple_param_to_url() {
         int id = 45;
         String name = "timeClock";
-        String uri = format(BASE_URL + "%d/%s", id, URLEncoder.encode(name));
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(uri))
-                .GET()
-                .header("content-type", JSON_CONTENT_TYPE)
-                .build();
-
-        HttpResponse<String> response = getHttpResponse(request);
-        Application result = gson.fromJson(response.body(), Application.class);
-
+        String uri = format(BASE_URL + "%d/%s", id, name);
+        HttpResponse<String> response = httpRequest.get(uri);
+        Application result = httpRequest.getGsonResponse(response,Application.class);
         Assertions.assertEquals(response.statusCode(), HTTP_200);
         assertResponse(result, 45, "timeClock", "track work hours for employees");
     }
 
     @Test
-    void get_all_applications() throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder().uri(new URI(BASE_URL)).GET().build();
-
-        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.body());
+    void get_all_applications() {
+        HttpResponse<String> response = httpRequest.get(BASE_URL);
         TypeToken<Collection<Application>> collectionType = new TypeToken<>() {};
         Collection<Application> applications = gson.fromJson(response.body(), collectionType.getType());
+
         Optional<Application> first = applications.stream().filter(application -> application.getId() == 70).findFirst();
 
-        Application expApp = new Application(70,"Channel list","TV Guide type app");
+        Application expApp = getApp(70, "Channel list", "TV Guide type app");
         assertThat(first.get()).isEqualTo(expApp);
-        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.statusCode()).isEqualTo(HTTP_200);
     }
 
+    @Test
+    void send_put_request_for_update_application_and_get_http_200() {
+        int id = 101;
+        Application application = getApp(id, "update: lockdown", "update: baby, calm down");
 
+        HttpResponse<String> response = httpRequest.put(BASE_URL, application);
 
-    private static HttpResponse<String> getHttpResponse(HttpRequest request) throws IOException, InterruptedException {
-        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(response.statusCode(), HTTP_200);
+
     }
 
     private static void assertResponse(Application actual, int expId, String expName, String expDescription) {
@@ -145,4 +114,8 @@ public class ApplicationResourceShould {
     }
 
 
+
+    private static Application getApp(int id, String name, String description) {
+        return new Application(id, name, description);
+    }
 }

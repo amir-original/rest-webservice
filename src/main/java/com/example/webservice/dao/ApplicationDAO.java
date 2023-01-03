@@ -15,4 +15,5 @@ public interface ApplicationDAO {
     void addApplication(Application application);
     void delete(int id);
 
+    void updateApplication(Application application);
 }

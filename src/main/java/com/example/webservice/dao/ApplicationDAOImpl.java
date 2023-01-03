@@ -94,6 +94,20 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         }
     }
 
+    @Override
+    public void updateApplication(Application application) {
+        try (Connection connection = DriverManager.getConnection(HOST, USER, PASSWORD);) {
+            String sql = "update tza_application set name=?,description=? where id=?";
+            PreparedStatement update = connection.prepareStatement(sql);
+            update.setString(1, application.getName());
+            update.setString(2, application.getDescription());
+            update.setInt(3, application.getId());
+            update.executeUpdate();
+        } catch (SQLException e){
+            throw new RuntimeSQLException(e);
+        }
+    }
+
     private Application getApplication(PreparedStatement statement) throws SQLException {
         Application result = null;
         ResultSet res = statement.executeQuery();

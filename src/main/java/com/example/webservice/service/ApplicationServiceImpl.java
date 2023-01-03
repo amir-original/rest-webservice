@@ -7,27 +7,35 @@ import com.example.webservice.dao.ApplicationDAOImpl;
 import java.util.List;
 
 public class ApplicationServiceImpl implements ApplicationService {
+
+    private ApplicationDAO dao;
+
+    public ApplicationServiceImpl(ApplicationDAO dao) {
+        this.dao = dao;
+    }
+
     @Override
     public List<Application> findAll() {
-        ApplicationDAO dao = new ApplicationDAOImpl();
         return dao.findAll();
     }
 
     @Override
     public Application findById(int id) {
-        ApplicationDAO dao = new ApplicationDAOImpl();
         return dao.findById(id);
     }
 
     @Override
     public Application findByIdAndName(int id, String name) {
-        ApplicationDAO dao = new ApplicationDAOImpl();
         return dao.findByIdAndName(id,name);
     }
 
     @Override
     public void addApplication(Application application) {
-        ApplicationDAO dao = new ApplicationDAOImpl();
         dao.addApplication(application);
+    }
+
+    @Override
+    public void updateApplication(Application application) {
+        dao.updateApplication(application);
     }
 }

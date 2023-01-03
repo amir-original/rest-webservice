@@ -12,4 +12,6 @@ public interface ApplicationService {
     Application findByIdAndName(int id,String name);
 
     void addApplication(Application application);
+
+    void updateApplication(Application application);
 }

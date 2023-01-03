@@ -1,5 +1,6 @@
 package com.example.webservice;
 
+import com.example.webservice.dao.ApplicationDAOImpl;
 import com.example.webservice.dao.RuntimeSQLException;
 import com.example.webservice.dao.RuntimeSQLIntegrityException;
 import com.example.webservice.service.ApplicationService;
@@ -18,7 +19,7 @@ public class ApplicationResource {
     private final ApplicationService service;
 
     public ApplicationResource() {
-        service = new ApplicationServiceImpl();
+        service = new ApplicationServiceImpl(new ApplicationDAOImpl());
     }
 
     @GET
@@ -32,16 +33,17 @@ public class ApplicationResource {
 
     @POST
     public Response addApplication(Application application) {
+        Response response = Response.status(201).build();
         try {
             service.addApplication(application);
         } catch (RuntimeSQLIntegrityException e) {
             e.printStackTrace();
-            return Response.status(409).build();
+            response = Response.status(409).build();
         } catch (RuntimeSQLException e) {
-            return Response.status(403).build();
+            response = Response.status(403).build();
         }
 
-        return Response.status(201).build();
+        return response;
     }
 
     @GET
@@ -56,6 +58,19 @@ public class ApplicationResource {
     public Response getApplicationMultiParam(@PathParam("id") int id, @PathParam("name") String name) {
         Application application = service.findByIdAndName(id, name);
         return Response.status(HTTP_200).entity(application).build();
+    }
 
+    @PUT
+    public Response updateApplication(Application application) {
+        Response response = Response.status(200).build();
+        try {
+            service.updateApplication(application);
+        } catch (RuntimeSQLException e) {
+            e.printStackTrace();
+            response = Response.status(403).build();
+        }
+
+
+        return response;
     }
 }
