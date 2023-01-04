@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.ws.rs.core.GenericType;
 import java.net.http.HttpResponse;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -86,8 +88,9 @@ public class ApplicationResourceShould {
     @Test
     void get_all_applications() {
         HttpResponse<String> response = httpRequest.get(BASE_URL);
-        TypeToken<Collection<Application>> collectionType = new TypeToken<>() {};
-        Collection<Application> applications = gson.fromJson(response.body(), collectionType.getType());
+        //how to convert array of object to collection
+        TypeToken<List<Application>> collectionType = new TypeToken<>() {};
+        List<Application> applications = gson.fromJson(response.body(), collectionType.getType());
 
         Optional<Application> first = applications.stream().filter(application -> application.getId() == 70).findFirst();
 
