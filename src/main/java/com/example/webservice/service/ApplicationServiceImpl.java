@@ -38,4 +38,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void updateApplication(Application application) {
         dao.updateApplication(application);
     }
+
+    @Override
+    public void delete(int id) {
+        dao.delete(id);
+    }
 }

@@ -70,7 +70,19 @@ public class ApplicationResource {
             response = Response.status(403).build();
         }
 
-
         return response;
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response deleteApplication(@PathParam("id") int id){
+        Response response = Response.status(204).build();
+        try{
+            service.delete(id);
+        }catch (RuntimeSQLException e){
+            e.printStackTrace();
+            response = Response.status(403).build();
+        }
+       return response;
     }
 }

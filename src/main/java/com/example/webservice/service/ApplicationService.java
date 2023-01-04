@@ -14,4 +14,6 @@ public interface ApplicationService {
     void addApplication(Application application);
 
     void updateApplication(Application application);
+
+    void delete(int id);
 }

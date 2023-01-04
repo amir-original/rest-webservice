@@ -48,6 +48,17 @@ public class HttpRequestServe {
     }
 
 
+    public HttpResponse<String> delete(String url) {
+        HttpRequest httpRequest = null;
+        try {
+            httpRequest = httpRequestBuilder(url).DELETE().build();
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return getHttpResponse(httpRequest);
+    }
+
     private HttpRequest.Builder httpRequestBuilder(String uri) throws URISyntaxException {
         return HttpRequest.newBuilder()
                 .uri(new URI(uri))
@@ -71,6 +82,5 @@ public class HttpRequestServe {
             throw new RuntimeException(e);
         }
     }
-
 
 }

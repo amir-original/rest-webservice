@@ -107,6 +107,17 @@ public class ApplicationResourceShould {
 
     }
 
+    @Test
+    void send_delete_request_and_get_204_http_response() {
+        int id = 47;
+        Application application = getApp(id,"name t","description");
+        service.addApplication(application);
+        HttpResponse<String> response = httpRequest.delete(BASE_URL+id);
+
+        assertThat(response.statusCode()).isEqualTo(204);
+
+    }
+
     private static void assertResponse(Application actual, int expId, String expName, String expDescription) {
         assertThat(actual.getId()).isEqualTo(expId);
         assertThat(actual.getName()).isEqualTo(expName);
